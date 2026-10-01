@@ -161,7 +161,7 @@ class LaneDetectorNode:
         
         original_size = bgr.shape[1], bgr.shape[0]
         if original_size != (self.img_w, self.img_h):
-            print(f"resizing {original_size} -> ({self.img_w}, {self.img_h})")
+            # print(f"resizing {original_size} -> ({self.img_w}, {self.img_h})")
             small = cv2.resize(bgr, (self.img_w, self.img_h), interpolation=cv2.INTER_NEAREST)
         else:
             small = bgr
@@ -240,10 +240,10 @@ class LaneDetectorNode:
             for i in range(lines.shape[0]):
                 segment = Segment()
                 segment.color = color_id
-                segment.points[0].x = lines[i, 0] / self.img_w
-                segment.points[0].y = (lines[i, 1] + self.cutoff_rows) / self.img_h
-                segment.points[1].x = lines[i, 2] / self.img_w
-                segment.points[1].y = (lines[i, 3] + self.cutoff_rows) / self.img_h
+                segment.pixels_normalized[0].x = lines[i, 0] / self.img_w
+                segment.pixels_normalized[0].y = (lines[i, 1] + self.cutoff_rows) / self.img_h
+                segment.pixels_normalized[1].x = lines[i, 2] / self.img_w
+                segment.pixels_normalized[1].y = (lines[i, 3] + self.cutoff_rows) / self.img_h
                 segment.normal.x = normals[i, 0]
                 segment.normal.y = normals[i, 1]
                 msg.segments.append(segment)
@@ -342,14 +342,8 @@ class LaneDetectorNode:
             self._publish_image(self.pub_lines_all, header, drawn, "bgr8")
 
     def _publish_image(self, publisher, header, image, encoding):
-        msg = Image()
+        msg = self.bridge.cv2_to_imgmsg(image, encoding)
         msg.header = header
-        msg.height, msg.width = image.shape[:2]
-        msg.encoding = encoding
-        msg.is_bigendian = 0
-        channels = 1 if image.ndim == 2 else image.shape[2]
-        msg.step = msg.width * channels
-        msg.data = np.ascontiguousarray(image).tobytes()
         publisher.publish(msg)
 
 

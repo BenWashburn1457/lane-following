@@ -4,7 +4,6 @@
 #
 # Named `duckiebot` because that is the fallback in
 #
-#     <arg name="ns" value="$(optenv VEHICLE_NAME duckiebot)" unless="$(arg test)"/>
 #
 # COPY THIS FILE AND NAME THE COPY AFTER YOUR ROBOT - config/<VEHICLE_NAME>.yaml.
 # That is the Duckietown convention and it is the filename the launch file
@@ -46,7 +45,7 @@ image_topic: "camera_node/image/compressed"
 # here. Copying their `top_cutoff: 40` into this file is an error, and the node
 # will say so rather than silently cropping nothing.
 img_size: [300, 400]
-top_cutoff: 0.3
+top_cutoff: 0.5
 
 # ---------------------------------------------------------------------------
 # TODO (Part II): the colour thresholds. This is the heart of the lab.
@@ -93,8 +92,8 @@ colors:
       max_line_gap: 10
 
   YELLOW:
-    low:  [5, 75, 50]        # TODO
-    high: [55, 190, 255]  # TODO
+    low:  [5, 65, 50]        # TODO
+    high: [70, 200, 255]  # TODO
     hough:
       # Dashed. A larger gap welds separate dashes into one long segment that
       # cuts across the curve - measurably worse votes. Keep this small.
