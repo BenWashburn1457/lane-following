@@ -45,7 +45,7 @@ image_topic: "camera_node/image/compressed"
 # here. Copying their `top_cutoff: 40` into this file is an error, and the node
 # will say so rather than silently cropping nothing.
 img_size: [300, 400]
-top_cutoff: 0.5
+top_cutoff: 0.4
 
 # ---------------------------------------------------------------------------
 # TODO (Part II): the colour thresholds. This is the heart of the lab.
@@ -85,15 +85,15 @@ top_cutoff: 0.5
 # ---------------------------------------------------------------------------
 colors:
   WHITE:
-    low:  [100, 20, 170]       # 
-    high: [130, 75, 250]  # 
+    low:  [0, 20, 170]       # 
+    high: [255, 75, 250]  # 
     hough:
       # Continuous line, so bridging a gap joins up one real marking.
       max_line_gap: 10
 
   YELLOW:
     low:  [5, 65, 50]        # TODO
-    high: [70, 200, 255]  # TODO
+    high: [70, 255, 255]  # TODO
     hough:
       # Dashed. A larger gap welds separate dashes into one long segment that
       # cuts across the curve - measurably worse votes. Keep this small.
@@ -113,7 +113,7 @@ colors:
 # bitwise_and finds almost nothing - notebook section 4.
 dilation_kernel_size: 3
 erode_iterations: 2
-dilate_iterations: 4
+dilate_iterations: 5
 
 # Working starting points. You are expected to come back and tune these once
 # your masks are right - notebook sections 5 and 7 show what each one does.
