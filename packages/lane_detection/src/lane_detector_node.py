@@ -131,6 +131,8 @@ class LaneDetectorNode:
         self.canny_thresholds = rospy.get_param("~canny_thresholds", [80, 200])
         self.canny_aperture_size = int(rospy.get_param("~canny_aperture_size", 3))
         self.normal_probe_px = int(rospy.get_param("~normal_probe_px", 2))
+        self.blur_kernel_size = int(rospy.get_param("~blur_kernel_size", 5))
+        self.blur_sigma = float(rospy.get_param("~blur_sigma", 0))
 
 
         # Computed variables from parameters.
@@ -142,6 +144,10 @@ class LaneDetectorNode:
         self.cutoff_rows = int(self.top_cutoff * self.img_h)
         self.kernel = cv2.getStructuringElement(
                     cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+        if self.blur_kernel_size > 0 and self.blur_kernel_size % 2 == 0:
+            raise ValueError(
+                f"~blur_kernel_size must be odd (or 0 to disable blurring), "
+                f"got {self.blur_kernel_size}.")
     
 
     # ----------------------------------------------------------------------
@@ -185,9 +191,18 @@ class LaneDetectorNode:
             masks[name] = mask
 
 
+        # Blur before edge detection so Canny doesn't fire on sensor noise /
+        # JPEG artifacts - only the edge path uses this, masks still see the
+        # sharp `cropped` image.
+        if self.blur_kernel_size > 0:
+            blurred = cv2.GaussianBlur(
+                cropped, (self.blur_kernel_size, self.blur_kernel_size), self.blur_sigma)
+        else:
+            blurred = cropped
+
         # (Part III): Canny once over `cropped`, not once per colour.
         # Notebook section 5.
-        edges = cv2.Canny(cropped, self.canny_thresholds[0], self.canny_thresholds[1], apertureSize=self.canny_aperture_size)
+        edges = cv2.Canny(blurred, self.canny_thresholds[0], self.canny_thresholds[1], apertureSize=self.canny_aperture_size)
 
         detections = {}
         for name, mask in masks.items():

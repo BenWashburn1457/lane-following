@@ -97,7 +97,7 @@ colors:
     hough:
       # Dashed. A larger gap welds separate dashes into one long segment that
       # cuts across the curve - measurably worse votes. Keep this small.
-      max_line_gap: 5
+      max_line_gap: 3
 
   RED:
     low_1:  [0, 100, 120]        # TODO
@@ -120,14 +120,21 @@ dilate_iterations: 4
 canny_thresholds: [120, 200]
 canny_aperture_size: 3
 
+# Gaussian blur applied to the cropped frame before Canny, to keep sensor
+# noise / JPEG artifacts from showing up as edges. blur_kernel_size must be
+# odd (0 disables blurring); blur_sigma 0 lets OpenCV derive sigma from the
+# kernel size.
+blur_kernel_size: 5
+blur_sigma: 0
+
 # Be more permissive than feels right. A lane marking at the far end of the
 # frame is only a few pixels long at this resolution, and those distant
 # segments are exactly the ones that tell the robot where the lane is going.
 # Defaults for every colour. Any colour can override any of these in its own
 # block above - see WHITE and YELLOW.
 hough:
-  threshold: 20
-  min_line_length: 10
+  threshold: 15
+  min_line_length: 7
   max_line_gap: 10
 
 # How far either side of a segment to sample the mask, in pixels.
