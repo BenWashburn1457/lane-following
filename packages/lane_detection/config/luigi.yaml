@@ -117,7 +117,7 @@ dilate_iterations: 5
 
 # Working starting points. You are expected to come back and tune these once
 # your masks are right - notebook sections 5 and 7 show what each one does.
-canny_thresholds: [120, 200]
+canny_thresholds: [40, 120]
 canny_aperture_size: 3
 
 # Gaussian blur applied to the cropped frame before Canny, to keep sensor
