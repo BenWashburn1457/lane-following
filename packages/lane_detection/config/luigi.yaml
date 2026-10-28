@@ -44,7 +44,7 @@ image_topic: "camera_node/image/compressed"
 # Note this differs from Duckietown's own line detector, which uses a row count
 # here. Copying their `top_cutoff: 40` into this file is an error, and the node
 # will say so rather than silently cropping nothing.
-img_size: [300, 400]
+img_size: [200, 233]
 top_cutoff: 0.4
 
 # ---------------------------------------------------------------------------
@@ -85,8 +85,8 @@ top_cutoff: 0.4
 # ---------------------------------------------------------------------------
 colors:
   WHITE:
-    low:  [0, 20, 170]       # 
-    high: [255, 75, 250]  # 
+    low:  [0, 0, 150]        # was [0, 20, 170]: S floor 0 and V floor 150 admit dimmer/washed-out white
+    high: [255, 90, 255]     # was [255, 75, 250]: higher S ceiling, and V up to 255 so blown-out white isn't dropped
     hough:
       # Continuous line, so bridging a gap joins up one real marking.
       max_line_gap: 10
