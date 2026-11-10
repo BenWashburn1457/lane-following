@@ -25,6 +25,11 @@ image_topic: "camera_node/image/compressed"
 #
 # Note this differs from Duckietown's own line detector, which uses a row count
 # here. Copying their `top_cutoff: 40` into this file is an error, and the node
+
+# How often (Hz) to run the detector. The image callback only keeps the newest
+# frame; a timer at this rate processes it. Older frames are dropped, so the
+# node never falls behind the camera. Can be changed live with rosparam set.
+process_rate: 10.0
 # will say so rather than silently cropping nothing.
 img_size: [300, 400]
 top_cutoff: 0.5

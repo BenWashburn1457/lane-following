@@ -85,6 +85,13 @@ class ColorRange:
 class LaneDetectorNode:
     def __init__(self):
         rospy.init_node("lane_detector_node")
+        # Latest frame from the camera, handed from image_cb to the processing
+        # timer. Only the newest frame is kept; older ones are dropped.
+        # Plain attribute assignment is atomic in Python, so no lock is needed.
+        self._latest_msg = None
+        self._last_processed_msg = None
+        self._process_timer = None
+        self.process_rate = None
         self.get_params(event=None)
         self.bridge = CvBridge()
 
@@ -115,6 +122,15 @@ class LaneDetectorNode:
                       rospy.resolve_name(self.image_topic),
                       ", ".join(sorted(self.colors)))
         rospy.Timer(rospy.Duration(1.0), self.get_params)
+        self._restart_process_timer()
+
+    def _restart_process_timer(self):
+        """(Re)start the processing timer at self.process_rate Hz."""
+        if self._process_timer is not None:
+            self._process_timer.shutdown()
+        self._process_timer = rospy.Timer(
+            rospy.Duration(1.0 / self.process_rate), self.process_cb)
+        rospy.loginfo("lane_detector_node processing at %.1f Hz", self.process_rate)
 
 
     def get_params(self, event):
@@ -133,6 +149,15 @@ class LaneDetectorNode:
         self.normal_probe_px = int(rospy.get_param("~normal_probe_px", 2))
         self.blur_kernel_size = int(rospy.get_param("~blur_kernel_size", 5))
         self.blur_sigma = float(rospy.get_param("~blur_sigma", 0))
+        process_rate = float(rospy.get_param("~process_rate", 10.0))
+        if process_rate <= 0:
+            raise ValueError(f"~process_rate must be > 0 Hz, got {process_rate}.")
+        if process_rate != self.process_rate:
+            self.process_rate = process_rate
+            # On startup the timer is created in __init__; after that, restart
+            # it here so a changed ~process_rate takes effect live.
+            if self._process_timer is not None:
+                self._restart_process_timer()
 
 
         # Computed variables from parameters.
@@ -155,7 +180,16 @@ class LaneDetectorNode:
     # ----------------------------------------------------------------------
 
     def image_cb(self, msg):
-        """Called for every frame. Keep it fast - this runs 20-30 times a second."""
+        """Called for every frame. Only stashes the newest one for process_cb."""
+        self._latest_msg = msg
+
+    def process_cb(self, event):
+        """Runs at ~process_rate Hz on the newest frame received, if any."""
+        msg = self._latest_msg
+        if msg is None or msg is self._last_processed_msg:
+            return  # no new frame since the last run
+        self._last_processed_msg = msg
+
         try:
             bgr = self.bridge.compressed_imgmsg_to_cv2(msg, "bgr8")
         except Exception as e:
